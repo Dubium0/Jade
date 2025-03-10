@@ -2,3 +2,7 @@ bin
 vendor/**/build/
 .vs
 .vscode
+
+*.vcxproj
+*.vcxproj.filters
+*.sln

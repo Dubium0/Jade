@@ -24,7 +24,7 @@ project "Engine"
      "../vendor/fastgltf/include",
      "../vendor/fmt/include",
      "../vendor/glm/glm",
-     "../vendor/SDL/include",
+     "../vendor/SDL2/include",
      "../vendor/stb",
      "../vendor/vk-bootstrap/src",
      "../vendor/VulkanMemoryAllocator/include",
@@ -34,7 +34,7 @@ project "Engine"
    libdirs {
         "../vendor/fastgltf/build/Release",
         "../vendor/fmt/build/Release",
-        "../vendor/SDL/build/Release"
+        "../vendor/SDL2/build/Release"
    }
 
    links { 
