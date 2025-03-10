@@ -2,3 +2,24 @@
 	path = vendor/SDL2
 	url = https://github.com/libsdl-org/SDL.git
 	branch = SDL2
+[submodule "vendor/VulkanMemoryAllocator"]
+	path = vendor/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "vendor/fastgltf"]
+	path = vendor/fastgltf
+	url = https://github.com/spnda/fastgltf.git
+[submodule "vendor/fmt"]
+	path = vendor/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "vendor/glm"]
+	path = vendor/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "vendor/stb"]
+	path = vendor/stb
+	url = https://github.com/nothings/stb.git
+[submodule "vendor/vk-bootstrap"]
+	path = vendor/vk-bootstrap
+	url = https://github.com/charles-lunarg/vk-bootstrap.git
