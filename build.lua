@@ -6,12 +6,15 @@ workspace "Jade"
 
    -- Workspace-wide build options for MSVC
    filter "system:windows"
-      buildoptions { "/EHsc", "/Zc:preprocessor", "/Zc:__cplusplus" }
+      buildoptions { "/EHsc", "/Zc:preprocessor", "/Zc:__cplusplus","/utf-8" }
 
 OutputDir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
 
+ROOT_JOIN = function (path)
+   return string.format("%s/%s", _MAIN_SCRIPT_DIR, path)
+end
+print(_MAIN_SCRIPT_DIR)
 group "Core"
 	include "core/build-core.lua"
 group ""
-
-include "app/build-app.lua"
+   include "app/build-app.lua"

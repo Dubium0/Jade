@@ -668,13 +668,20 @@ void VulkanEngine::initBackgroundPipelines()
 
 	VK_CHECK(vkCreatePipelineLayout(device, &computeLayout, nullptr, &gradientPipelineLayout));
 
+	std::string shadersRootPath{ "../ShaderCompiler" };
+
+	#ifdef SHADERS_PATH
+		shadersRootPath = SHADERS_PATH;
+	#endif
+		auto gradientComp = shadersRootPath + "/gradient.comp.spv";
 	VkShaderModule gradientShader;
-	if (!vkUtil::loadShaderModule("../shaders/gradient.comp.spv", device, gradientShader))
+	if (!vkUtil::loadShaderModule(gradientComp, device, gradientShader))
 	{
 		fmt::print("Error when building the compute shader \n");
 	}
+	auto skyComp = shadersRootPath + "/sky.comp.spv";
 	VkShaderModule skyShader;
-	if (!vkUtil::loadShaderModule("../shaders/sky.comp.spv", device, skyShader)) {
+	if (!vkUtil::loadShaderModule(skyComp, device, skyShader)) {
 		fmt::print("Error when building the compute shader \n");
 	}
 
@@ -1034,9 +1041,14 @@ GPUMeshBuffers VulkanEngine::uploadMesh(std::span<uint32_t> indices, std::span<V
 
 void VulkanEngine::initMeshPipeline()
 {
-
+	std::string shadersRootPath{ "../ShaderCompiler" };
+	#ifdef SHADERS_PATH
+		shadersRootPath = SHADERS_PATH;
+	#endif
 	VkShaderModule triangleFragShader;
-	if (!vkUtil::loadShaderModule("../shaders/tex_image.frag.spv", device, triangleFragShader)) {
+
+	auto texImageFrag = shadersRootPath + "/tex_image.frag.spv";
+	if (!vkUtil::loadShaderModule(texImageFrag, device, triangleFragShader)) {
 		fmt::print("Error when building the triangle fragment shader module");
 	}
 	else {
@@ -1044,7 +1056,8 @@ void VulkanEngine::initMeshPipeline()
 	}
 
 	VkShaderModule triangleVertexShader;
-	if (!vkUtil::loadShaderModule("../shaders/colored_triangle_mesh.vert.spv", device, triangleVertexShader)) {
+	auto texImageVert = shadersRootPath + "/colored_triangle_mesh.vert.spv";
+	if (!vkUtil::loadShaderModule(texImageVert, device, triangleVertexShader)) {
 		fmt::print("Error when building the triangle vertex shader module");
 	}
 	else {
@@ -1301,13 +1314,21 @@ void VulkanEngine::destroyImage(const AllocatedImage& img)
 
 void GLTFMetallic_Roughness::buildPipelines(VulkanEngine* engine)
 {
+
+	std::string shadersRootPath{"../ShaderCompiler"};
+
+	
+#ifdef SHADERS_PATH
+	shadersRootPath = SHADERS_PATH;
+#endif
+	auto meshFrag = shadersRootPath + "/mesh.frag.spv";
 	VkShaderModule meshFragShader;
-	if (!vkUtil::loadShaderModule("../shaders/mesh.frag.spv", engine->device, meshFragShader)) {
+	if (!vkUtil::loadShaderModule(meshFrag, engine->device, meshFragShader)) {
 		fmt::println("Error when building the triangle fragment shader module");
 	}
-
+	auto meshVert = shadersRootPath + "/mesh.vert.spv";
 	VkShaderModule meshVertexShader;
-	if (!vkUtil::loadShaderModule("../shaders/mesh.vert.spv", engine->device, meshVertexShader)) {
+	if (!vkUtil::loadShaderModule(meshVert, engine->device, meshVertexShader)) {
 		fmt::println("Error when building the triangle vertex shader module");
 	}
 
