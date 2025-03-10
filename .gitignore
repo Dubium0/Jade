@@ -1,4 +1,4 @@
 bin
-
+vendor/**/build/
 .vs
 .vscode
