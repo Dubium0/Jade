@@ -13,7 +13,10 @@ project "App"
       "headers",
 
 	  -- Include Core
-	  "../core/engine/headers"
+	  "../core/engine/headers",
+      "../core/ecs/headers",
+
+      VENDOR_ROOT .. "/fmt/include"
    }
 
    links
@@ -38,6 +41,13 @@ project "App"
         "{COPY} %{wks.location}vendor/SDL2/build/%{cfg.buildcfg}/*.dll %{cfg.targetdir}"
        }
 
+       libdirs {
+        VENDOR_ROOT .. "/fmt/build/%{cfg.buildcfg}"
+        }
+       links { 
+        "fmtd"
+        }
+
    filter "configurations:Release"
        defines { "RELEASE" }
        runtime "Release"
@@ -46,6 +56,13 @@ project "App"
        postbuildcommands {
         "{COPY} %{wks.location}vendor/SDL2/build/%{cfg.buildcfg}/*.dll %{cfg.targetdir}"
        }
+
+       libdirs {
+        VENDOR_ROOT .. "/fmt/build/%{cfg.buildcfg}"
+        }
+       links { 
+        "fmt"
+        }
    filter "configurations:Dist"
        defines { "DIST" }
        runtime "Release"
@@ -54,3 +71,10 @@ project "App"
        postbuildcommands {
         "{COPY} %{wks.location}vendor/SDL2/build/Release/*.dll %{cfg.targetdir}"
        }
+
+       libdirs {
+        VENDOR_ROOT .. "/fmt/build/%{cfg.buildcfg}"
+        }
+       links { 
+        "fmt"
+        }

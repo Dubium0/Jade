@@ -14,6 +14,12 @@ ROOT_JOIN = function (path)
    return string.format("%s/%s", _MAIN_SCRIPT_DIR, path)
 end
 print(_MAIN_SCRIPT_DIR)
+
+VENDOR_ROOT = ROOT_JOIN "vendor"
+ENGINE_ROOT = ROOT_JOIN "core/engine"
+ECS_ROOT = ROOT_JOIN "core/ecs"
+APP_ROOT = ROOT_JOIN "app"
+
 group "Core"
 	include "core/build-core.lua"
 group ""

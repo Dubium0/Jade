@@ -5,7 +5,6 @@ project "Engine"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
     
-   VENDOR_ROOT = "../../vendor"
    files {  "headers/**.hpp",
             "headers/**.h", 
             "sources/**.cpp",

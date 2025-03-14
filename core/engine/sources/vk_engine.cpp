@@ -38,13 +38,34 @@ VulkanEngine *VulkanEngine::getInstance()
     return instance_;
 }
 
-void VulkanEngine::init(jade::EngineCreateInfo createInfo)
+bool VulkanEngine::init(jade::EngineCreateInfo createInfo)
 {
     windowTitle = createInfo.windowTitle;
     windowExtent.width = createInfo.windowWidth;
     windowExtent.height =createInfo.windowHeight;
     // We initialize SDL and create a window with it.
     SDL_Init(SDL_INIT_VIDEO);
+
+	int monitorCount = SDL_GetNumVideoDisplays();
+	if (monitorCount < 1) {
+		fmt::println("No monitors found!");
+		SDL_Quit();
+		return false;
+	}
+	for (int i = 0; i < monitorCount; i++) {
+		SDL_DisplayMode displayMode;
+		if (SDL_GetDesktopDisplayMode(i, &displayMode) == 0) {
+			fmt::println("Monitor {} maximum resolution: {} , {}", i, displayMode.w, displayMode.h);
+			availableDisplayModes.push_back(displayMode);
+				
+		}
+		else {
+			fmt::println("Failed to get display mode for monitor {} ", i);
+
+		}
+	}
+	
+
 
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 
@@ -55,6 +76,7 @@ void VulkanEngine::init(jade::EngineCreateInfo createInfo)
         windowExtent.width,
         windowExtent.height,
         window_flags);
+	
 
 
     initVulkan();
@@ -89,6 +111,7 @@ void VulkanEngine::init(jade::EngineCreateInfo createInfo)
     loadedScenes["structure"] = *structureFile;
 
     isInitialized = true;
+	return isInitialized;
 }
 
 void VulkanEngine::cleanup()
@@ -856,17 +879,17 @@ void VulkanEngine::drawGeometry(VkCommandBuffer cmd)
 			opaque_draws.push_back(i);
 		}
 
-		//// sort the opaque surfaces by material and mesh
-		//std::sort(opaque_draws.begin(), opaque_draws.end(), [&](const auto& iA, const auto& iB) {
-		//	const RenderObject& A = mainDrawContext.OpaqueSurfaces[iA];
-		//	const RenderObject& B = mainDrawContext.OpaqueSurfaces[iB];
-		//	if (A.material == B.material) {
-		//		return A.indexBuffer < B.indexBuffer;
-		//	}
-		//	else {
-		//		return A.material < B.material;
-		//	}
-		//	});
+		// sort the opaque surfaces by material and mesh
+		std::sort(opaque_draws.begin(), opaque_draws.end(), [&](const auto& iA, const auto& iB) {
+			const RenderObject& A = mainDrawContext.OpaqueSurfaces[iA];
+			const RenderObject& B = mainDrawContext.OpaqueSurfaces[iB];
+			if (A.material == B.material) {
+				return A.indexBuffer < B.indexBuffer;
+			}
+			else {
+				return A.material < B.material;
+			}
+			});
 
 		//allocate a new uniform buffer for the scene data
 		AllocatedBuffer gpuSceneDataBuffer = createBuffer(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -1488,3 +1511,5 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
 	// recurse down
 	Node::Draw(topMatrix, ctx);
 }
+
+

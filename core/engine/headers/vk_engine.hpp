@@ -10,11 +10,6 @@
 #include "vk_loader.hpp"
 #include "vk_camera.hpp"
 
-#ifdef ENGINE_EXPORTS
-#define ENGINE_API __declspec(dllexport)
-#else
-#define ENGINE_API __declspec(dllimport)
-#endif
 
 struct DeletionQueue
 {
@@ -33,6 +28,7 @@ struct DeletionQueue
 		deletors.clear();
 	}
 };
+
 struct GPUSceneData {
     glm::mat4 view;
     glm::mat4 proj;
@@ -41,6 +37,7 @@ struct GPUSceneData {
     glm::vec4 sunlightDirection; // w for sun power
     glm::vec4 sunlightColor;
 };
+
 struct FrameData {
 	VkSemaphore swapchainSemaphore{};
 	VkSemaphore renderSemaphore{};
@@ -227,6 +224,8 @@ public:
 	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> loadedScenes{};
 
 	EngineStats stats{};
+
+	std::vector<SDL_DisplayMode> availableDisplayModes{};
 public:
 	//singleton logic
 	VulkanEngine(VulkanEngine &other) = delete;
@@ -234,7 +233,7 @@ public:
 	static VulkanEngine *getInstance();
 
 	//initializes everything in the engine
-	void init(jade::EngineCreateInfo createInfo);
+	bool init(jade::EngineCreateInfo createInfo);
 
 	//shuts down the engine
 	void cleanup();
@@ -272,4 +271,5 @@ private:
 	void initMeshPipeline();
 	void initDefaultData();
 	void resizeSwapchain();
+
 };

@@ -11,7 +11,7 @@ extern "C" {
 
     namespace jade{
 
-        ENGINE_API_EXPORT void initEngine(EngineCreateInfo createInfo);
+        ENGINE_API_EXPORT bool initEngine(EngineCreateInfo createInfo);
         ENGINE_API_EXPORT void runEngine();
         ENGINE_API_EXPORT void cleanupEngine();
 

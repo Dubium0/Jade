@@ -14,11 +14,11 @@ const char* getEngineMessage() {
 
 
 
-void jade::initEngine(EngineCreateInfo createInfo){
+bool jade::initEngine(EngineCreateInfo createInfo){
 
     std::cout << "Hello from init engine DLL! title: " << createInfo.windowTitle << 
         " height: " << createInfo.windowHeight << " width: " << createInfo.windowWidth << std::endl;
-    VulkanEngine::getInstance()->init(createInfo);    
+    return VulkanEngine::getInstance()->init(createInfo);    
 }
 	
 void jade::runEngine(){
