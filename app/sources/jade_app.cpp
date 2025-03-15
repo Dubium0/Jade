@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <format>
-
+#include <chrono>
 #include <fmt/core.h>
 
 #include <jade_engine.hpp>
@@ -35,77 +35,78 @@ struct TransformSystem {
             fmt::println("Cannot add child to itself!");
             return;
         }
-		auto& parentNode = m_nodeComponentPoolRef.getComponentRW(t_parent);
-        auto& childNode = m_nodeComponentPoolRef.getComponentRW(t_child);
+		auto parentHandle = m_nodeComponentPoolRef.getComponentHandle(t_parent);
+        auto childHandle = m_nodeComponentPoolRef.getComponentHandle(t_child);
 
-        if (parentNode.parentEntity == t_child) {
+        if (parentHandle.getR().parentEntity == t_child) {
             fmt::println("Cannot add parent as child!");
             return; 
         }
 
         removeChild(t_child);// if child has a parent this detaches it, this also ensures we dont add twice
 
-		if (parentNode.lastChild != ecs::InvalidEntity) {
+		if (parentHandle.getR().lastChild != ecs::InvalidEntity) {
 			
-            auto& lastChildNode = m_nodeComponentPoolRef.getComponentRW(parentNode.lastChild);
-            lastChildNode.rightSibling = t_child;
-            childNode.leftSibling = parentNode.lastChild;
-            childNode.parentEntity = t_parent;
-            parentNode.lastChild = t_child;
+            auto lastChildHandle = m_nodeComponentPoolRef.getComponentHandle(parentHandle.getR().lastChild);
+            lastChildHandle.getRW().rightSibling = t_child;
+            childHandle.getRW().leftSibling = parentHandle.getR().lastChild;
+            childHandle.getRW().parentEntity = t_parent;
+            parentHandle.getRW().lastChild = t_child;
         }
         else {
-            parentNode.lastChild = t_child;
-            childNode.parentEntity = t_parent;
+            parentHandle.getRW().lastChild = t_child;
+            childHandle.getRW().parentEntity = t_parent;
         }    
     }
     void removeChild( ecs::JadeEntity t_child) {
       
-        auto& childNode = m_nodeComponentPoolRef.getComponentRW(t_child);
+        auto childHandle = m_nodeComponentPoolRef.getComponentHandle(t_child);
 
-        if (childNode.parentEntity != ecs::InvalidEntity) {
+        if (childHandle.getR().parentEntity != ecs::InvalidEntity) {
 
-            auto& oldParentNode = m_nodeComponentPoolRef.getComponentRW(childNode.parentEntity);
+            auto oldParentHandle = m_nodeComponentPoolRef.getComponentHandle(childHandle.getR().parentEntity);
 
-            if (childNode.leftSibling != ecs::InvalidEntity && childNode.rightSibling != ecs::InvalidEntity) {
-                auto& leftSiblingNode = m_nodeComponentPoolRef.getComponentRW(childNode.leftSibling);
-                auto& rightSiblingNode = m_nodeComponentPoolRef.getComponentRW(childNode.rightSibling);
-                leftSiblingNode.rightSibling = childNode.rightSibling;
-                rightSiblingNode.leftSibling = childNode.leftSibling;
-
-            }
-            else if (childNode.leftSibling == ecs::InvalidEntity && childNode.rightSibling != ecs::InvalidEntity) {
-
-                auto& rightSiblingNode = m_nodeComponentPoolRef.getComponentRW(childNode.rightSibling);
-                rightSiblingNode.leftSibling = ecs::InvalidEntity;
+            if (childHandle.getR().leftSibling != ecs::InvalidEntity && childHandle.getR().rightSibling != ecs::InvalidEntity) {
+                auto leftSiblingHandle = m_nodeComponentPoolRef.getComponentHandle(childHandle.getR().leftSibling);
+                auto rightSiblingHandle = m_nodeComponentPoolRef.getComponentHandle(childHandle.getR().rightSibling);
+                leftSiblingHandle.getRW().rightSibling = childHandle.getR().rightSibling;
+                rightSiblingHandle.getRW().leftSibling = childHandle.getR().leftSibling;
 
             }
-            else if (childNode.leftSibling != ecs::InvalidEntity && childNode.rightSibling == ecs::InvalidEntity) {
-                oldParentNode.lastChild = childNode.leftSibling;
-                auto& leftSiblingNode = m_nodeComponentPoolRef.getComponentRW(childNode.leftSibling);
-                leftSiblingNode.rightSibling = ecs::InvalidEntity;
+            else if (childHandle.getR().leftSibling == ecs::InvalidEntity && childHandle.getR().rightSibling != ecs::InvalidEntity) {
+
+                auto rightSiblingHandle= m_nodeComponentPoolRef.getComponentHandle(childHandle.getR().rightSibling);
+                rightSiblingHandle.getRW().leftSibling = ecs::InvalidEntity;
+
+            }
+            else if (childHandle.getR().leftSibling != ecs::InvalidEntity && childHandle.getR().rightSibling == ecs::InvalidEntity) {
+                oldParentHandle.getRW().lastChild = childHandle.getR().leftSibling;
+                auto leftSiblingNode = m_nodeComponentPoolRef.getComponentHandle(childHandle.getR().leftSibling);
+                leftSiblingNode.getRW().rightSibling = ecs::InvalidEntity;
 
             }
             else {
-                oldParentNode.lastChild = ecs::InvalidEntity;
+                oldParentHandle.getRW().lastChild = ecs::InvalidEntity;
             }
-            childNode.leftSibling = ecs::InvalidEntity;
-            childNode.rightSibling = ecs::InvalidEntity;
-            childNode.parentEntity = ecs::InvalidEntity;
+            childHandle.getRW().leftSibling = ecs::InvalidEntity;
+            childHandle.getRW().rightSibling = ecs::InvalidEntity;
+            childHandle.getRW().parentEntity = ecs::InvalidEntity;
+            
         }
         
     }
     // caller should make sure that t_parent has node component
     std::vector<ecs::JadeEntity> getChildren(ecs::JadeEntity t_parent) {
 
-        auto& parentNode = m_nodeComponentPoolRef.getComponentR(t_parent);
+        auto parentHandle = m_nodeComponentPoolRef.getComponentHandle(t_parent);
       
         std::vector<ecs::JadeEntity> children{};
 
-        ecs::JadeEntity lastChild = parentNode.lastChild;
+        ecs::JadeEntity lastChild = parentHandle.getR().lastChild;
 
         while (lastChild != ecs::InvalidEntity) {
             children.push_back(lastChild);
-            lastChild = m_nodeComponentPoolRef.getComponentR(lastChild).leftSibling;
+            lastChild = m_nodeComponentPoolRef.getComponentHandle(lastChild).getR().leftSibling;
         }
         return children;
        
@@ -117,8 +118,8 @@ struct TransformSystem {
         std::string name{"Empty"};
         if (m_nameComponentPoolRef.doEntityExists(t_root)) {
 
-            auto rootName = m_nameComponentPoolRef.getComponentR(t_root);
-            name = rootName.name;
+            auto rootHandle = m_nameComponentPoolRef.getComponentHandle(t_root);
+            name = rootHandle.getR().name;
 
         }
         fmt::println("Entity : {} has name {}", t_root, name);
@@ -144,34 +145,49 @@ int main() {
 
 	ecs::EntityManager entityManager{};
 
-//
-//auto& nameComponentPool = componentPoolManager.getComponentPool<NameComponent>();
-//auto& nodeComponentPool = componentPoolManager.getComponentPool<NodeComponent>();
-//
-//TransformSystem transformSystem(nodeComponentPool, nameComponentPool);
-//
-//auto rootEntity = entityManager.createEntity();
-//auto childEntity = entityManager.createEntity();
-//
-//nodeComponentPool.addPair(rootEntity, {});
-//nodeComponentPool.addPair(childEntity, {});
-//
-//transformSystem.addChild(rootEntity, childEntity);
-//auto& rootNode = nodeComponentPool.getComponentR(rootEntity);
-//for (auto i = 2; i < UINT32_MAX; i++) {
-//    auto entity = entityManager.createEntity();
-//    nodeComponentPool.addPair(entity, {});
-//    transformSystem.addChild(rootNode.lastChild, entity);
-//}
-//
-//transformSystem.printTree(rootEntity);
-    struct A {
-        int x{0};
-    };
-    std::vector< A> intArray = { {.x = 1}, {.x = 2}, {.x = 3}, };
-    ecs::utilitiy::ElementHandle handle ( intArray ,0);
     
+    auto& nameComponentPool = componentPoolManager.getComponentPool<NameComponent>();
+    auto& nodeComponentPool = componentPoolManager.getComponentPool<NodeComponent>();
     
+    TransformSystem transformSystem(nodeComponentPool, nameComponentPool);
+    
+    auto rootEntity = entityManager.createEntity();
+    auto childEntity = entityManager.createEntity();
+    
+    nodeComponentPool.addPair(rootEntity, {});
+    nodeComponentPool.addPair(childEntity, {});
+    
+    transformSystem.addChild(rootEntity, childEntity);
+    auto rootHandle = nodeComponentPool.getComponentHandle(rootEntity);
+
+    auto startCreateAndAdd = std::chrono::high_resolution_clock::now();
+    for (auto i = 2; i < 1000000; i++) {
+        auto entity = entityManager.createEntity();
+        nodeComponentPool.addPair(entity, {});
+        transformSystem.addChild(rootHandle.getR().lastChild, entity);
+    }
+    
+    auto endCreateAndAdd = std::chrono::high_resolution_clock::now();
+
+    uint32_t counter = 0;
+    auto startPrint = std::chrono::high_resolution_clock::now();
+    //transformSystem.printTree(rootEntity);
+    for (const auto& elem : nodeComponentPool.getComponents()) {
+        counter = elem.lastChild * elem.leftSibling * elem.parentEntity * elem.rightSibling;
+    }
+
+    auto endPrint = std::chrono::high_resolution_clock::now();
+
+
+
+    auto elaspedCreateAndAdd = std::chrono::duration_cast<std::chrono::milliseconds>(endCreateAndAdd - startCreateAndAdd).count();
+    auto elaspedPrint = std::chrono::duration_cast<std::chrono::milliseconds>(endPrint - startPrint).count();
+
+    fmt::println("Elapsed create and add time {} in ms", elaspedCreateAndAdd);
+
+    
+    fmt::println("Elapsed print time {} in ms", elaspedPrint);
+
     /*
     jade::EngineCreateInfo createInfo{};
     createInfo.windowTitle = "Jade Engine";

@@ -16,9 +16,9 @@
 
 namespace ecs {
 	
-
-	inline uint32_t componentTypeIdSequence  = 0;
-	template< typename T > inline const uint32_t componentTypeId = componentTypeIdSequence++;
+	using ComponentIdType = uint16_t;
+	inline ComponentIdType componentTypeIdSequence  = 0;
+	template< typename T > inline const ComponentIdType componentTypeId = componentTypeIdSequence++;
 	
 
 	using ComponentPoolType = utilitiy::PoolType;
@@ -33,8 +33,7 @@ namespace ecs {
 		inline bool removePair(JadeEntity t_entity) { return m_componentPool.remove(t_entity); }
 		inline const std::vector<T>& getComponents() const { return m_componentPool.getElements(); }
 
-		inline const T& getComponentR(JadeEntity t_entity) const { return m_componentPool.getElementR(t_entity); }
-		inline T& getComponentRW(JadeEntity t_entity) { return m_componentPool.getElementRW(t_entity); }
+		inline utilitiy::ElementHandle<T> getComponentHandle(JadeEntity t_entity) { return m_componentPool.getElementHandle(t_entity); }
 		inline const JadeEntity getEntityOfComponent(size_t t_componentIndex) const { return m_componentPool.getKey(t_componentIndex); }
 
 		inline bool doComponentExists(size_t t_componentIndex) const { return m_componentPool.doValueExists(t_componentIndex); }
@@ -47,13 +46,12 @@ namespace ecs {
 
 	private:
 	
-		std::unordered_map<uint32_t,std::unique_ptr<ComponentPoolType>> m_componentPools{};
+		std::unordered_map<ComponentIdType,std::unique_ptr<ComponentPoolType>> m_componentPools{};
 	public:
 
 		template <typename T>
 		ComponentPool<T>& getComponentPool() {
 			auto typeIndex = componentTypeId<T>;
-
 			//lazy init
 			{
 

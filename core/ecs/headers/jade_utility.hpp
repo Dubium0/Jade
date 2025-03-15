@@ -22,19 +22,22 @@ namespace ecs::utilitiy {
 	// a dyamic pool cannot guarantee the returned references since it may reallocate the whole array on resize
 	// so we can only use an handle modify the value
 
+
+
 	template<typename T>
-	class ElementHandle : private T{
+	class ElementHandle {
 	private:
 		std::vector<T>& m_arrayRef;
 		size_t m_elemIndex;
-
-     
+		
 	public:
 		ElementHandle(std::vector<T>& t_arrayRef, size_t t_elemIndex) :m_arrayRef(t_arrayRef),m_elemIndex(t_elemIndex){}
 		
+		T& getRW() { return  m_arrayRef[m_elemIndex]; }
+		const T& getR() const{ return  m_arrayRef[m_elemIndex]; }
 
+		operator T& () { return m_arrayRef[m_elemIndex];}
 
-		
 	};
 
 
@@ -42,7 +45,7 @@ namespace ecs::utilitiy {
 	class Pool {
 	private:
 
-		std::vector<TValue> m_elements{ };
+		std::vector<TValue> m_elements{};
 		std::queue<size_t> m_dirtyElements{};
 		std::unordered_map<TKey, size_t> m_keyValueMap{};
 		std::unordered_map<size_t, TKey > m_valueKeyMap{};
@@ -98,23 +101,15 @@ namespace ecs::utilitiy {
 			return it->second;
 			
 		}
-		inline TValue& getElementRW(TKey t_key) {
+
+		inline ElementHandle<TValue> getElementHandle(TKey t_key) {
 			auto it = m_keyValueMap.find(t_key);
 			if (it == m_keyValueMap.end()) {
 				throw std::exception("The key is not present in keyValue map");
 			}
-			
-			return m_elements[it->second];
+			return ElementHandle(m_elements, it->second);
 		}
 		
-		inline const TValue& getElementR(TKey t_key) const {
-			auto it = m_keyValueMap.find(t_key);
-			if (it == m_keyValueMap.end()) {
-				throw std::exception("The key is not present in keyValue map"); 
-			}
-			return m_elements[it->second];
-		}
-
 		inline bool doKeyExists(TKey t_key) const{
 			return m_keyValueMap.find(t_key) != m_keyValueMap.end();
 		}
