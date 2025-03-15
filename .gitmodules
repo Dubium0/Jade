@@ -23,6 +23,3 @@
 [submodule "vendor/vk-bootstrap"]
 	path = vendor/vk-bootstrap
 	url = https://github.com/charles-lunarg/vk-bootstrap.git
-[submodule "vendor/vmcontainer"]
-	path = vendor/vmcontainer
-	url = https://github.com/mknejp/vmcontainer.git
