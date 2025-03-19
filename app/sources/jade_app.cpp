@@ -143,25 +143,50 @@ int main() {
     
 	ecs::ComponentPoolManager componentPoolManager{};
 
+	ecs::EntityManager entityManager{};
+
+    
+    auto& nameComponentPool = componentPoolManager.getComponentPool<NameComponent>();
+    auto& nodeComponentPool = componentPoolManager.getComponentPool<NodeComponent>();
+    
+    TransformSystem transformSystem(nodeComponentPool, nameComponentPool);
+    
+    auto rootEntity = entityManager.createEntity();
+    auto childEntity = entityManager.createEntity();
+    
+    nodeComponentPool.addPair(rootEntity, {});
+    nodeComponentPool.addPair(childEntity, {});
+    
+    transformSystem.addChild(rootEntity, childEntity);
+    auto rootHandle = nodeComponentPool.getComponentHandle(rootEntity);
+
+    auto startCreateAndAdd = std::chrono::high_resolution_clock::now();
+    for (auto i = 2; i < 1000000; i++) {
+        auto entity = entityManager.createEntity();
+        nodeComponentPool.addPair(entity, {});
+        transformSystem.addChild(rootHandle.getR().lastChild, entity);
+    }
+    
+    auto endCreateAndAdd = std::chrono::high_resolution_clock::now();
+
+    uint32_t counter = 0;
+    auto startPrint = std::chrono::high_resolution_clock::now();
+    //transformSystem.printTree(rootEntity);
+    for (const auto& elem : nodeComponentPool.getComponents()) {
+        counter = elem.lastChild * elem.leftSibling * elem.parentEntity * elem.rightSibling;
+    }
+
+    auto endPrint = std::chrono::high_resolution_clock::now();
 
 
-    struct Player {
-        
-    };
-    Player playerHeader{};
-	ecs::EntityGroup<Player> playerEntities{ playerHeader };
-    auto playerGroupId = playerEntities.getGroupId();
-    auto entityHandle = playerEntities.createEntity();
-    auto result = playerEntities.getLocalId(entityHandle);
-    playerEntities.deleteEntity(result);
-    struct Monster {
 
-    };
-    Monster monsterHeader{};
-    ecs::EntityGroup<Monster> monsterEntities{ monsterHeader };
-    auto monsterGroupId = monsterEntities.getGroupId();
-    auto monsterHandle = monsterEntities.createEntity();
-    return 0;
+    auto elaspedCreateAndAdd = std::chrono::duration_cast<std::chrono::milliseconds>(endCreateAndAdd - startCreateAndAdd).count();
+    auto elaspedPrint = std::chrono::duration_cast<std::chrono::milliseconds>(endPrint - startPrint).count();
+
+    fmt::println("Elapsed create and add time {} in ms", elaspedCreateAndAdd);
+
+    
+    fmt::println("Elapsed print time {} in ms", elaspedPrint);
 
     /*
     jade::EngineCreateInfo createInfo{};
